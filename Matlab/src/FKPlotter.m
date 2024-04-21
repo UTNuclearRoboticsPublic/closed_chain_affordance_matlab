@@ -45,7 +45,7 @@ function [plotrepf, plotrepl, plotrepj, plotrept, plotrepn]  = FKPlotter(mlist,s
             frame_lw = 6; %linewidth
             frame_as = 1; %arrow size
             link_lw = 7;
-            joint_size = 17;
+            joint_size = 25;
 
     %% Dynamic plots: manipulator and EE frames
     for i = 1:size(FK, 4)
@@ -57,6 +57,7 @@ function [plotrepf, plotrepl, plotrepj, plotrept, plotrepn]  = FKPlotter(mlist,s
             campos([3 -1 2])
             camzoom(2)
             camva(20) 
+            grid off
         else
             plotrepn(i,1) = 1;
         end
@@ -94,13 +95,16 @@ function [plotrepf, plotrepl, plotrepj, plotrept, plotrepn]  = FKPlotter(mlist,s
         plotrepf(i,5) = quiver3(x2Pos(1), x2Pos(2), x2Pos(3), x2Rot(1,2), x2Rot(2,2), x2Rot(3,2),'g', 'LineWidth', frame_lw, 'MaxHeadSize', frame_as, 'AutoScaleFactor',quiverScaler); % x2 task frame y vector
         plotrepf(i,6) = quiver3(x2Pos(1), x2Pos(2), x2Pos(3), x2Rot(1,3), x2Rot(2,3), x2Rot(3,3),'b', 'LineWidth', frame_lw, 'MaxHeadSize', frame_as, 'AutoScaleFactor',quiverScaler); % x2 task frame z vector
         
+        % Screw axis
+        % plotrepf(i,4) = quiver3(x2Pos(1), x2Pos(2), x2Pos(3), x2Rot(1,1), x2Rot(2,1), x2Rot(3,1),'c', 'LineWidth', frame_lw, 'MaxHeadSize', frame_as, 'AutoScaleFactor',quiverScaler); % x2 task frame x vector
+
         %Links
-        plotrepl(i,1) = plot3(xLink, yLink, zLink, 'k', 'LineWidth', link_lw); % real manipulator links
+        % plotrepl(i,1) = plot3(xLink, yLink, zLink, 'k', 'LineWidth', link_lw); % real manipulator links
         plotrepl(i,2) = plot3(imXLink, imYLink, imZLink, 'b--', 'LineWidth', link_lw); % imaginary link connecting x1 and x2
        
         % Joint and task markers
-        plotrepj(i,1) = plot3(xLink, yLink, zLink, 'o', 'MarkerSize', joint_size, 'MarkerFaceColor','m'); % all real joints
-        plotrepj(i,2) = plot3(x2Pos(1), x2Pos(2), x2Pos(3), 'bd', 'MarkerSize', joint_size, 'MarkerFaceColor','m'); % x2 task marker
+        plotrepj(i,1) = plot3(xLink, yLink, zLink, 'o', 'MarkerSize', joint_size+5, 'MarkerFaceColor','r'); % all real joints
+        plotrepj(i,2) = plot3(x2Pos(1), x2Pos(2), x2Pos(3), 'o', 'linewidth', 4, 'Color', 'c', 'MarkerSize', joint_size, 'MarkerFaceColor','w'); % x2 task marker
         plotrepj(i,3) = plot3(x1Pos(1), x1Pos(2), x1Pos(3), 'o', 'MarkerSize', joint_size, 'MarkerFaceColor','k'); % x1 task marker
         
         % Task 2 trajectory

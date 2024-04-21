@@ -21,43 +21,64 @@
 %--------------------------------------------------------------------------
 
 %% Clear variables and figures
-close all
+% close all
 clear all
 clf
 clc
 
 % Robot and Affordance Type
 robotType = 'UR5';
-affType = 'pure_trans';
+affType = 'screw'; % values: 'pure_rot', 'pure_trans', or 'screw'.
 
 % Algorithm control parameters
-affStep = 0.05;
+affStep = 0.1;
 accuracy = 1*(1/100); % accuracy for error threshold
 taskErrThreshold = accuracy*affStep;
 closureErrThreshold = 1e-4;
 maxItr = 50; % for IK solver
-stepperMaxItr = 1; % for total steps
+stepperMaxItr = 50; % for total steps , enter 0 to plot start config only
 dt = 1e-2; % time step to compute joint velocities
-delta_theta = 0.1;
+delta_theta = -0.1;
 pathComputerFlag = true;
 taskOffset = 1;
+pitch = 0.05; %m/rad
 
 % Build the robot and plot FK to validate configuration
 [mlist, slist, thetalist0, Tsd, x1Tindex, x2Tindex, xlimits, ylimits, zlimits, tick_quantum, quiverScaler,  azimuth, elevation] = RobotBuilder(robotType, affType);
+slist(:,end) = -slist(:,end);
+
 figure(1)
-robotType = 'UR3';
+robotType = 'UR5';
 if strcmpi(robotType,'UR5')
     robot = loadrobot("universalUR5","DataFormat","column");
 else
     robot = [];
 end
-screwPathMatrix = zeros(3,3,3);
-[plotrepf, plotrepl, plotrepj, plotrept, plotrepn] = FKPlotter(mlist,slist,thetalist0, x1Tindex, x2Tindex, xlimits, ylimits, zlimits, tick_quantum, quiverScaler,  azimuth, elevation, robotType, robot, screwPathMatrix); 
 
 % Specify screw axis for pure translation
 if strcmpi(affType,'pure_trans')
     slist(:,end) = [0 0 0 1 0 0]';
+elseif strcmpi(affType, 'screw')
+    % compose helical screw
+    helical_screw = -slist(:,end);
+    helical_screw(4:6) = helical_screw(4:6) + pitch*helical_screw(1:3);
+    slist(:,end) = helical_screw;
 end
+screwPathMatrix = zeros(3,3,3);
+% If plotting screw path with start config, uncomment the following
+% Compute the screw path to plot as well
+% screwPathStart = FKinSpace(mlist(:,:,end-2), slist(:,1:end-2), thetalist0(1:end-2));% Starting guess for all relevant frames/tasks
+% if strcmpi(affType,'pure_trans')
+%     iterations = 5;
+%     start_offset = [0.1; 0; 0];
+%     screwPathStart(1:3, 4) = screwPathStart(1:3, 4) + start_offset; % offset the path such that the beginning of the path coincides with the start config of the robot
+%     screwPath  = screwPathCreator(slist(:,end), screwPathStart, -delta_theta, iterations);
+% else
+%     iterations = 64;
+%     screwPath  = screwPathCreator(slist(:,end), screwPathStart, delta_theta, iterations);
+% end
+% screwPathMatrix = reshape(screwPath(1:3, 4, :), 3, [])'; % get xyz co
+[plotrepf, plotrepl, plotrepj, plotrept, plotrepn] = FKPlotter(mlist,slist,thetalist0, x1Tindex, x2Tindex, xlimits, ylimits, zlimits, tick_quantum, quiverScaler,  azimuth, elevation, robotType, robot, screwPathMatrix); 
 
 % Extract error frame
 mErr = mlist(:,:,end);
@@ -76,12 +97,6 @@ while stepperItr<=stepperMaxItr
 
 tic; % For computation time calculation
 
-% Define Network Matrices as relevant Jacobian columns
-rJ = JacobianSpace(slist,thetalist0); % robot Jacobian
-Np = rJ(:,1:end-taskOffset); % primary - actuated
-Ns = rJ(:,end-taskOffset+1:end); % secondary - unactuated
-
-
 % Set desired secondary task (affordance and maybe gripper orientation) as 
 % just a few radians away from the current position
 qsd = thetalist0(end-taskOffset+1:end);
@@ -90,7 +105,8 @@ qsd(taskOffset) = qsd(taskOffset)+stepperItr*affStep;
 
 % Set starting guess for the primary joint angles and compute forward
 % kinematics
-oldqp= zeros(size(Np,2),1); % for joint velocity calculation
+% oldqp= zeros(size(Np,2),1); % for joint velocity calculation
+oldqp= zeros(length(qp_guess),1); % for joint velocity calculation
 qp = qp_guess;
 qsb = qsb_guess;
 
@@ -113,6 +129,12 @@ while err && ikIter<maxItr
     rJ = JacobianSpace(slist,thetalist);
     Np = rJ(:,1:end-taskOffset); % primary - actuated
     Ns = rJ(:,end-taskOffset+1:end); % secondary - unactuated
+    % Np = JacobianSpace(slist(:,1:end-taskOffset),thetalist(1:end-taskOffset));
+    % Ns = JacobianSpace(slist(:,end:-1:end-taskOffset+1),thetalist(end:-1:end-taskOffset+1));
+    % if (cond(Ns)>100)
+    %     disp("MATRIX SINGULAR")
+    %     break;
+    % end
 
     % Compute primary joint angles
     qp_dot = (qp - oldqp)/dt;
@@ -122,7 +144,7 @@ while err && ikIter<maxItr
 
 
     % Damped Least Squares
-    % lambda = 1.2;
+    lambda = 1.2;
     % qp = qp +cJ'*pinv(cJ*cJ'+lambda^2*eye(size(cJ*cJ',1)))*(qsd-qsb);
 
     % Optimize closure error
@@ -167,8 +189,10 @@ title("Affordance Step Goal Error vs. Iteration for " + num2str(stepperItr) + "s
 xlabel("iterations", 'FontSize', label_fontsize,  'FontWeight', 'bold');
 % xlim([1 9]);    % Pure rotation first step of 0.5rad
 % xlim([1 8]);    % Pure rotation first step of 0.1rad
-xlim([1 30]);    % Pure translation first step of 0.05m
+% xlim([1 30]);    % Pure translation first step of 0.05m
 % xlim([1 30]);    % Pure translation first step of 0.01m
+xlim([1 10]);    % screw first step of 0.5rad
+% xlim([1 8]);    % screw first step of 0.1rad
 
 % ee_error_plot_xlim = xlim(gca)
 if strcmpi(affType,'pure_trans')
@@ -189,7 +213,7 @@ if strcmpi(affType,'pure_trans')
     % Pure translation first step of 0.01m
     % ylim([10e-6-10e-7 10e-3]);
     % yticks([10^-4, 10^-2]);
-else
+elseif strcmpi(affType,'pure_rot')
     yyaxis left
     ylabel("ee error, rad", 'FontSize', label_fontsize,  'FontWeight', 'bold');
     % Pure rotation first step of 0.5rad
@@ -207,6 +231,25 @@ else
     % Pure rotation first step of 0.1rad
     % ylim([10e-5 10e-2]);
     % yticks([10^-4,10^-2]);
+
+else % screw
+    yyaxis left
+    ylabel("ee error, rad", 'FontSize', label_fontsize,  'FontWeight', 'bold');
+    % Pure rotation first step of 0.5rad
+    % ylim([10e-4 10e-1]);
+    % yticks([10^-3,10^-1]);
+    % Pure rotation first step of 0.1rad
+    ylim([10e-5 10e-2]);
+    yticks([10^-3,10^-1]);
+    yyaxis right
+    set(gca, 'YColor', 'k');
+    set(gca, 'YScale', 'log');
+    % Pure rotation first step of 0.5rad
+    % ylim([10e-4 10e-1]);
+    % yticks([10^-2,10^0]);
+    % Pure rotation first step of 0.1rad
+    ylim([10e-5 10e-2]);
+    yticks([10^-4,10^-2]);
 end
 
 subplot(2,1,2)
@@ -220,14 +263,16 @@ xlabel("iterations", 'FontSize', label_fontsize,  'FontWeight', 'bold');
 ylabel("closure error", 'FontSize', label_fontsize,  'FontWeight', 'bold');
 % xlim([1 9]);    % Pure rotation first step of 0.5rad
 % xlim([1 8]);    % Pure rotation first step of 0.1rad
-xlim([1 30]);    % Pure translation first step of 0.05m
+% xlim([1 30]);    % Pure translation first step of 0.05m
 % xlim([1 30]);    % Pure translation first step of 0.01m
+xlim([1 10]);    % screw first step of 0.5rad
+% xlim([1 8]);    % screw first step of 0.1rad
 
 
 yyaxis left
 % Pure translation first step of 0.05m
-ylim([10e-7 10e-2]);
-yticks([10^-5, 10^-3, 10^-1]);
+% ylim([10e-7 10e-2]);
+% yticks([10^-5, 10^-3, 10^-1]);
 % Pure translation first step of 0.01m
 % ylim([10e-9 10e-4]);
 % yticks([10^-7, 10^-5, 10^-3]);
@@ -237,12 +282,18 @@ yticks([10^-5, 10^-3, 10^-1]);
 % Pure rotation first step of 0.1rad
 % ylim([10e-8 10e-3]);
 % yticks([10^-7, 10^-5, 10^-3]);
+% Screw first step of 0.5rad
+% ylim([10e-8 10e-2]);
+% yticks([10^-7, 10^-5, 10^-3, 10^-1]);
+% Screw first step of 0.1rad
+ylim([10e-8 10e-3]);
+yticks([10^-7, 10^-5, 10^-3]);
 yyaxis right
 set(gca, 'YColor', 'k');
 set(gca, 'YScale', 'log');
 % Pure translation first step of 0.05m
-ylim([10e-7 10e-2]);
-yticks([10^-6, 10^-4, 10^-2]);
+% ylim([10e-7 10e-2]);
+% yticks([10^-6, 10^-4, 10^-2]);
 % Pure translation first step of 0.01m
 % ylim([10e-9 10e-4]);
 % yticks([10^-8, 10^-6, 10^-4]);
@@ -252,6 +303,12 @@ yticks([10^-6, 10^-4, 10^-2]);
 % Pure rotation first step of 0.1rad
 % ylim([10e-8 10e-3]);
 % yticks([10^-6, 10^-4, 10^-2]);
+% Screw first step of 0.5rad
+% ylim([10e-8 10e-2]);
+% yticks([10^-6, 10^-4, 10^-2]);
+% Screw first step of 0.1rad
+ylim([10e-8 10e-3]);
+yticks([10^-6, 10^-4, 10^-2]);
 
 if success
     disp("Working m:")
@@ -264,10 +321,11 @@ if success
         iterations = 5;
         start_offset = [0.1; 0; 0];
         screwPathStart(1:3, 4) = screwPathStart(1:3, 4) + start_offset; % offset the path such that the beginning of the path coincides with the start config of the robot
-        screwPath  = screwPathCreator(rJ(:,end), screwPathStart, -delta_theta, iterations);
+        screwPath  = screwPathCreator(slist(:,end), screwPathStart, -delta_theta, iterations);
+
     else
         iterations = 64;
-        screwPath  = screwPathCreator(rJ(:,end), screwPathStart, delta_theta, iterations);
+        screwPath  = screwPathCreator(slist(:,end), screwPathStart, delta_theta, iterations);
     end
     screwPathMatrix = reshape(screwPath(1:3, 4, :), 3, [])'; % get xyz coordinates and put them in an N x 3 form
     pathComputerFlag = false; % to compute only once
