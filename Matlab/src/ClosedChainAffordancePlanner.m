@@ -1,22 +1,12 @@
 %--------------------------------------------------------------------------
 % Author: Crasun Jans (Janak Panthi)
 % Date: 07/2023
-% Description: 
+% Description:
 %   This MATLAB script simulates execution of different affordance types by
-%   a UR5 robot based on a novel closed-chain inverse kinematics approach.
-%
-% Usage:
-%   [Explain how to use the code, including any input/output parameters]
-%
-% Example:
-%   [Provide an example of how to use the code, if applicable]
-%
-% Dependencies:
-%   Robotics System Toolbox
+%   a UR5 robot using the Closed-chain Affordance framework.
 %
 % References:
-%   Panthi, Affordance as a Closure to Open-Chain Serial Manipulators and 
-% Numerical Inverse Kinematics for Closed-Chain Mechanisms
+% Janak Panthi, A Closed-Chain Approach to Generating Affordance Trajectories
 %
 %--------------------------------------------------------------------------
 
@@ -78,7 +68,7 @@ screwPathMatrix = zeros(3,3,3);
 %     screwPath  = screwPathCreator(slist(:,end), screwPathStart, delta_theta, iterations);
 % end
 % screwPathMatrix = reshape(screwPath(1:3, 4, :), 3, [])'; % get xyz co
-[plotrepf, plotrepl, plotrepj, plotrept, plotrepn] = FKPlotter(mlist,slist,thetalist0, x1Tindex, x2Tindex, xlimits, ylimits, zlimits, tick_quantum, quiverScaler,  azimuth, elevation, robotType, robot, screwPathMatrix); 
+[plotrepf, plotrepl, plotrepj, plotrept, plotrepn] = FKPlotter(mlist,slist,thetalist0, x1Tindex, x2Tindex, xlimits, ylimits, zlimits, tick_quantum, quiverScaler,  azimuth, elevation, robotType, robot, screwPathMatrix);
 
 % Extract error frame
 mErr = mlist(:,:,end);
@@ -97,7 +87,7 @@ while stepperItr<=stepperMaxItr
 
 tic; % For computation time calculation
 
-% Set desired secondary task (affordance and maybe gripper orientation) as 
+% Set desired secondary task (affordance and maybe gripper orientation) as
 % just a few radians away from the current position
 qsd = thetalist0(end-taskOffset+1:end);
 qsd(taskOffset) = qsd(taskOffset)+stepperItr*affStep;
@@ -125,7 +115,7 @@ errPlotMatrix = []; % Plotting matrix
 while err && ikIter<maxItr
 
     %Update Jacobians
-    thetalist =[qp; qsb]; 
+    thetalist =[qp; qsb];
     rJ = JacobianSpace(slist,thetalist);
     Np = rJ(:,1:end-taskOffset); % primary - actuated
     Ns = rJ(:,end-taskOffset+1:end); % secondary - unactuated
@@ -155,7 +145,7 @@ while err && ikIter<maxItr
     errPlotMatrix(ikIter,1) = ikIter;
     errPlotMatrix(ikIter,2) = norm(qsd-qsb);
     errPlotMatrix(ikIter,3) = norm(errTwist);
-    
+
     % Check error as loop condition
 err = norm(qsd-qsb)>taskErrThreshold|| norm(errTwist)>closureErrThreshold;
 
@@ -356,12 +346,12 @@ max(ikIterHolder)
 % delete(plotrepj);
 % delete(plotrept);
 if strcmpi(robotType, 'UR5')
-    delete(plotrepn);   
+    delete(plotrepn);
 end
 
 % Animate stored configurations
 for ikIter = 1:1:stepperItrSuc-1
-    [plotrepf, plotrepl, plotrepj, plotrept, plotrepn] = FKPlotter(mlist,slist,animPlotMatrix(:,ikIter), x1Tindex, x2Tindex, xlimits, ylimits, zlimits, tick_quantum, quiverScaler,  azimuth, elevation, robotType, robot, screwPathMatrix); 
+    [plotrepf, plotrepl, plotrepj, plotrept, plotrepn] = FKPlotter(mlist,slist,animPlotMatrix(:,ikIter), x1Tindex, x2Tindex, xlimits, ylimits, zlimits, tick_quantum, quiverScaler,  azimuth, elevation, robotType, robot, screwPathMatrix);
     drawnow;
     pause(0.001);
     if ikIter~=stepperItrSuc-1
@@ -370,7 +360,7 @@ for ikIter = 1:1:stepperItrSuc-1
     % delete(plotrepj);
     % delete(plotrept);
         if strcmpi(robotType, 'UR5')
-            delete(plotrepn);   
+            delete(plotrepn);
         end
     end
 end
