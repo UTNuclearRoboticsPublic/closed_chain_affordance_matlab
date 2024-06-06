@@ -59,6 +59,7 @@ function [plotrepf, plotrepl, plotrepj, plotrept, plotrepn]  = FKPlotter(mlist,s
             targetJointPosition = thetalist(:,i);
             plotrepn(i,1) = show(robot,targetJointPosition(1:6), 'Frames','off');
             campos([3 -1 2])
+            % campos([2 1.5 0.6]) % camera position for screw motion demo
             camzoom(2)
             camva(20)
             grid off
