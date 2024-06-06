@@ -351,7 +351,7 @@ end
 
 % Capture animation video
 % v = VideoWriter("demo", 'MPEG-4');
-open(v);
+% open(v);
 % Animate stored configurations
 for ikIter = 1:1:stepperItrSuc-1
     [plotrepf, plotrepl, plotrepj, plotrept, plotrepn] = FKPlotter(mlist,slist,animPlotMatrix(:,ikIter), x1Tindex, x2Tindex, xlimits, ylimits, zlimits, tick_quantum, quiverScaler,  azimuth, elevation, robotType, robot, screwPathMatrix);
