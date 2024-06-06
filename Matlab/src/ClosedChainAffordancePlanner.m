@@ -349,10 +349,15 @@ if strcmpi(robotType, 'UR5')
     delete(plotrepn);
 end
 
+% Capture animation video
+% v = VideoWriter("demo", 'MPEG-4');
+open(v);
 % Animate stored configurations
 for ikIter = 1:1:stepperItrSuc-1
     [plotrepf, plotrepl, plotrepj, plotrept, plotrepn] = FKPlotter(mlist,slist,animPlotMatrix(:,ikIter), x1Tindex, x2Tindex, xlimits, ylimits, zlimits, tick_quantum, quiverScaler,  azimuth, elevation, robotType, robot, screwPathMatrix);
     drawnow;
+    % frame = getframe(gcf);
+    % writeVideo(v,frame)
     pause(0.001);
     if ikIter~=stepperItrSuc-1
     % delete(plotrepf);
@@ -364,3 +369,4 @@ for ikIter = 1:1:stepperItrSuc-1
         end
     end
 end
+% close(v)
