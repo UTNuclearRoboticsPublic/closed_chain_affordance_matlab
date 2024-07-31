@@ -26,7 +26,7 @@ accuracy = 1*(1/100); % accuracy for error threshold
 taskErrThreshold = accuracy*affStep;
 closureErrThreshold = 1e-4;
 maxItr = 50; % for IK solver
-stepperMaxItr = 50; % for total steps , enter 0 to plot start config only
+stepperMaxItr = 1; % for total steps , enter 0 to plot start config only
 dt = 1e-2; % time step to compute joint velocities
 delta_theta = -0.1;
 pathComputerFlag = true;
@@ -175,14 +175,14 @@ set(gca, 'YScale', 'log');
 set(gca, 'FontSize', grid_fontsize,  'FontWeight', 'bold');
 grid on
 set(gca, 'GridLineWidth', grid_lw);
-title("Affordance Step Goal Error vs. Iteration for " + num2str(stepperItr) + "st Step", 'FontSize', title_fontsize);
+% title("Affordance Step Goal Error vs. Iteration for " + num2str(stepperItr) + "st Step", 'FontSize', title_fontsize);
 xlabel("iterations", 'FontSize', label_fontsize,  'FontWeight', 'bold');
 % xlim([1 9]);    % Pure rotation first step of 0.5rad
 % xlim([1 8]);    % Pure rotation first step of 0.1rad
 % xlim([1 30]);    % Pure translation first step of 0.05m
 % xlim([1 30]);    % Pure translation first step of 0.01m
-xlim([1 10]);    % screw first step of 0.5rad
-% xlim([1 8]);    % screw first step of 0.1rad
+% xlim([1 10]);    % screw first step of 0.5rad
+xlim([1 10]);    % screw first step of 0.1rad
 
 % ee_error_plot_xlim = xlim(gca)
 if strcmpi(affType,'pure_trans')
@@ -248,15 +248,15 @@ set(gca, 'YScale', 'log');
 set(gca, 'FontSize', grid_fontsize,  'FontWeight', 'bold');
 grid on
 set(gca, 'GridLineWidth', grid_lw);
-title("Closure Error vs. Iteration for " + num2str(stepperItr) + "st Step", 'FontSize', title_fontsize);
+% title("Closure Error vs. Iteration for " + num2str(stepperItr) + "st Step", 'FontSize', title_fontsize);
 xlabel("iterations", 'FontSize', label_fontsize,  'FontWeight', 'bold');
 ylabel("closure error", 'FontSize', label_fontsize,  'FontWeight', 'bold');
 % xlim([1 9]);    % Pure rotation first step of 0.5rad
 % xlim([1 8]);    % Pure rotation first step of 0.1rad
 % xlim([1 30]);    % Pure translation first step of 0.05m
 % xlim([1 30]);    % Pure translation first step of 0.01m
-xlim([1 10]);    % screw first step of 0.5rad
-% xlim([1 8]);    % screw first step of 0.1rad
+% xlim([1 10]);    % screw first step of 0.5rad
+xlim([1 10]);    % screw first step of 0.1rad
 
 
 yyaxis left
