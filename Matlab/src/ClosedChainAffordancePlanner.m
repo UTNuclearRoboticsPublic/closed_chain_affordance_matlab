@@ -183,6 +183,8 @@ xlabel("iterations", 'FontSize', label_fontsize,  'FontWeight', 'bold');
 % xlim([1 30]);    % Pure translation first step of 0.01m
 % xlim([1 10]);    % screw first step of 0.5rad
 xlim([1 10]);    % screw first step of 0.1rad
+xlimits = xlim;
+set(gca,'Xtick',0:1:xlimits(2))
 
 % ee_error_plot_xlim = xlim(gca)
 if strcmpi(affType,'pure_trans')
@@ -257,7 +259,8 @@ ylabel("closure error", 'FontSize', label_fontsize,  'FontWeight', 'bold');
 % xlim([1 30]);    % Pure translation first step of 0.01m
 % xlim([1 10]);    % screw first step of 0.5rad
 xlim([1 10]);    % screw first step of 0.1rad
-
+xlimits = xlim;
+set(gca,'Xtick',0:1:xlimits(2))
 
 yyaxis left
 % Pure translation first step of 0.05m
