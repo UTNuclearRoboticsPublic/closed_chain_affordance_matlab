@@ -189,7 +189,7 @@ set(gca,'Xtick',0:1:xlimits(2))
 % ee_error_plot_xlim = xlim(gca)
 if strcmpi(affType,'pure_trans')
     yyaxis left
-    ylabel("ee error, m", 'FontSize', label_fontsize,  'FontWeight', 'bold');
+    ylabel("aff error, m", 'FontSize', label_fontsize,  'FontWeight', 'bold');
     % Pure translation first step of 0.05m
     ylim([10e-5 10e-2]);
     yticks([10^-3,10^-1]);
@@ -207,7 +207,7 @@ if strcmpi(affType,'pure_trans')
     % yticks([10^-4, 10^-2]);
 elseif strcmpi(affType,'pure_rot')
     yyaxis left
-    ylabel("ee error, rad", 'FontSize', label_fontsize,  'FontWeight', 'bold');
+    ylabel("aff error, rad", 'FontSize', label_fontsize,  'FontWeight', 'bold');
     % Pure rotation first step of 0.5rad
     ylim([10e-4 10e-1]);
     yticks([10^-3,10^-1]);
@@ -226,7 +226,7 @@ elseif strcmpi(affType,'pure_rot')
 
 else % screw
     yyaxis left
-    ylabel("ee error, rad", 'FontSize', label_fontsize,  'FontWeight', 'bold');
+    ylabel("aff error, rad", 'FontSize', label_fontsize,  'FontWeight', 'bold');
     % Pure rotation first step of 0.5rad
     % ylim([10e-4 10e-1]);
     % yticks([10^-3,10^-1]);
