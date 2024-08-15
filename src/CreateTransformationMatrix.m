@@ -9,7 +9,7 @@
 %%--pos: position vector-----------------------------------------%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function tM = tM(axis, theta, pos)
+function tM = CreateTransformationMatrix(axis, theta, pos)
 %constants
 RO3 = zeros(1,3);
 

@@ -37,13 +37,13 @@ function [mlist, slist, thetalist0, Tsd, x1Tindex, x2Tindex, xlimits, ylimits, z
 
        % Set the first frame as identity
         % mlist(:,:,1) = eye(4);
-        mlist(:,:,1) = tM('z', 0, q(:,1));
+        mlist(:,:,1) = CreateTransformationMatrix('z', 0, q(:,1));
 
         % Construct screw axes and frames
         for i = 1:length(w)
         v(:,i) = -cross(w(:,i), q(:,i));
         slist(:,i) = [w(:,i); v(:,i)];
-        mlist(:,:, i+1) = tM('z', 0, q(:,i+1)); 
+        mlist(:,:, i+1) = CreateTransformationMatrix('z', 0, q(:,i+1)); 
         end
 
 

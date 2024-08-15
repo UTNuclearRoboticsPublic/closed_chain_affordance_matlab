@@ -128,11 +128,11 @@ if success
         iterations = 5;
         start_offset = [0.1; 0; 0];
         screwPathStart(1:3, 4) = screwPathStart(1:3, 4) + start_offset; % offset the path such that the beginning of the path coincides with the start config of the robot
-        screwPath  = screwPathCreator(slist(:,end), screwPathStart, -delta_theta, iterations);
+        screwPath  = ScrewPathCreator(slist(:,end), screwPathStart, -delta_theta, iterations);
 
     else
         iterations = 64;
-        screwPath  = screwPathCreator(slist(:,end), screwPathStart, delta_theta, iterations);
+        screwPath  = ScrewPathCreator(slist(:,end), screwPathStart, delta_theta, iterations);
     end
     screwPathMatrix = reshape(screwPath(1:3, 4, :), 3, [])'; % get xyz coordinates and put them in an N x 3 form
     pathComputerFlag = false; % to compute only once

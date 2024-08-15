@@ -1,3 +1,6 @@
+%--------------------------------------------------------------------------
+% Author: Crasun Jans (Janak Panthi)
+%--------------------------------------------------------------------------
 
 function [success, thetalist, errPlotMatrix, ikIter] = CallCcIkSolver(slist, qp_guess, qsb_guess, qsd, taskOffset, taskErrThreshold, maxItr, dt, closureErrThreshold, Tsd)
 

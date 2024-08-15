@@ -2,7 +2,7 @@
 % Author: Crasun Jans (Janak Panthi)
 %--------------------------------------------------------------------------
 
-function screwPathT = screwPathCreator(S, screwPathTstart, delta_theta, iterations)
+function screwPathT = ScrewPathCreator(S, screwPathTstart, delta_theta, iterations)
 %% Given a screw axis and a moving frame, creates a matrix of discretized points on the screw path
     ri = 1;  %plotting matrix row indexer as well as loop incrementer
     initialScrewPathTStart = screwPathTstart;
