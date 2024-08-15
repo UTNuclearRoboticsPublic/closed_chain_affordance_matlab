@@ -18,7 +18,7 @@ clc
 
 % Robot and Affordance Type
 robotType = 'UR5';
-affType = 'screw'; % values: 'pure_rot', 'pure_trans', or 'screw'.
+affType = 'pure_rot'; % values: 'pure_rot', 'pure_trans', or 'screw'.
 
 % Algorithm control parameters
 affStep = 0.1;
@@ -26,7 +26,7 @@ accuracy = 1*(1/100); % accuracy for error threshold
 taskErrThreshold = accuracy*affStep;
 closureErrThreshold = 1e-4;
 maxItr = 50; % for IK solver
-stepperMaxItr = 1; % for total steps , enter 0 to plot start config only
+stepperMaxItr = 10; % for total steps , enter 0 to plot start config only
 dt = 1e-2; % time step to compute joint velocities
 delta_theta = -0.1;
 pathComputerFlag = true;
@@ -34,8 +34,35 @@ taskOffset = 1;
 pitch = 0.05; %m/rad
 
 % Build the robot and plot FK to validate configuration
-[mlist, slist, thetalist0, Tsd, x1Tindex, x2Tindex, xlimits, ylimits, zlimits, tick_quantum, quiverScaler,  azimuth, elevation] = RobotBuilder(robotType, affType);
-slist(:,end) = -slist(:,end);
+[mlist, slist, thetalist0, Tsd, x1Tindex, x2Tindex, xlimits, ylimits, zlimits, tick_quantum, quiverScaler,  azimuth, elevation] = RobotBuilder();
+M = mlist(:,:,end); % End-effector frame
+start_config = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]';
+
+% Define affordance screw
+if strcmpi(affType,'pure_rot')
+    w_aff = [1 0 0]';
+    q_aff = [-0.5 0.5 0]';
+    aff_screw = [w_aff; cross(q_aff,w_aff)]
+elseif strcmpi(affType,'pure_trans')
+    q_aff = [0 0 0]';
+    aff_screw = [0 0 0 -1 0 0]';
+elseif strcmpi(affType, 'screw')
+    % compose helical screw
+    w_aff = [1 0 0]';
+    q_aff = [0 0 0]';
+    aff_screw = [w_aff; cross(q_aff,w_aff)];
+    aff_screw(4:6) = aff_screw(4:6) + pitch*aff_screw(1:3);
+end
+% cc_slist = compose_cc_slist(slist, start_config, M, aff_screw);
+slist = compose_cc_slist(slist, start_config, M, aff_screw);
+% Append frames for plotting purposes
+mlist(:,:,end+1) = mlist(:,:,end); % Virtual screw axis 2
+mlist(:,:,end+1) = mlist(:,:,end); % Virtual screw axis 3
+aff_frame = eye(4);
+aff_frame(1:3,4) = q_aff; % adjust to use link lengths
+mlist(:,:,end+1) = aff_frame; % affordance frame
+mlist(:,:,end+1) = Tsd; % closed-chain end-effector frame
+
 
 figure(1)
 robotType = 'UR5';
