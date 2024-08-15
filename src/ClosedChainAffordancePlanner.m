@@ -9,6 +9,8 @@
 % Janak Panthi, A Closed-Chain Approach to Generating Affordance Trajectories
 %
 %--------------------------------------------------------------------------
+%% Add MR functions to path
+addpath(fullfile(pwd, 'ModernRobotics'));
 
 %% Clear variables and figures
 % close all
@@ -26,7 +28,7 @@ accuracy = 1*(1/100); % accuracy for error threshold
 taskErrThreshold = accuracy*affStep;
 closureErrThreshold = 1e-4;
 maxItr = 50; % for IK solver
-stepperMaxItr = 1; % for total steps , enter 0 to plot start config only
+stepperMaxItr = 50; % for total steps , enter 0 to plot start config only
 dt = 1e-2; % time step to compute joint velocities
 delta_theta = -0.1;
 pathComputerFlag = true;
