@@ -35,13 +35,18 @@ pitch = 0.05; %m/rad
 
 % Build the robot and plot FK to validate configuration
 [mlist, slist, thetalist0, Tsd, x1Tindex, x2Tindex, xlimits, ylimits, zlimits, tick_quantum, quiverScaler,  azimuth, elevation] = RobotBuilder();
+
 M = mlist(:,:,end); % End-effector frame
 start_config = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]';
 
 % Define affordance screw
 if strcmpi(affType,'pure_rot')
     w_aff = [1 0 0]';
-    q_aff = [-0.5 0.5 0]';
+    % q_aff = [-0.5 0.5 0]';
+    aff_offset = [0 0.1 0]';
+    q_aff = M(1:3,4) + aff_offset;
+    aff_frame = eye(4);
+    aff_frame(1:3,4) = q_aff;
     aff_screw = [w_aff; cross(q_aff,w_aff)]
 elseif strcmpi(affType,'pure_trans')
     q_aff = [0 0 0]';
@@ -56,11 +61,10 @@ end
 % cc_slist = compose_cc_slist(slist, start_config, M, aff_screw);
 slist = compose_cc_slist(slist, start_config, M, aff_screw);
 % Append frames for plotting purposes
-mlist(:,:,end+1) = mlist(:,:,end); % Virtual screw axis 2
-mlist(:,:,end+1) = mlist(:,:,end); % Virtual screw axis 3
-aff_frame = eye(4);
-aff_frame(1:3,4) = q_aff; % adjust to use link lengths
-mlist(:,:,end+1) = aff_frame; % affordance frame
+
+mlist(:,:,end+1) = M; % Virtual screw axis 2
+mlist(:,:,end+1) = M; % Virtual screw axis 3
+mlist(:,:,end+1) = aff_frame;
 mlist(:,:,end+1) = Tsd; % closed-chain end-effector frame
 
 

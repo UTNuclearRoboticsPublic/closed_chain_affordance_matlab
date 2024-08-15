@@ -36,7 +36,8 @@ function [mlist, slist, thetalist0, Tsd, x1Tindex, x2Tindex, xlimits, ylimits, z
         w(:,6) = [0 1 0]';
 
        % Set the first frame as identity
-        mlist(:,:,1) = eye(4);
+        mlist(:,:,1) = eye(4)
+        % mlist(:,:,1) = tM('z', 0, q(:,1));
 
         % Construct screw axes and frames
         for i = 1:length(w)
@@ -46,8 +47,8 @@ function [mlist, slist, thetalist0, Tsd, x1Tindex, x2Tindex, xlimits, ylimits, z
         end
 
 
-        % Closure error - Define as identity in this configuration
-        Tsd = eye(4);
+        % Desired closure error frame
+        Tsd = mlist(:,:,1); % same as the first joint frame
 
         % Task indices for plotting purposes
         x1Tindex = 10;
