@@ -1,4 +1,7 @@
-function [cc_slist] = compose_cc_slist(slist, thetalist, M, aff_screw)
+%--------------------------------------------------------------------------
+% Author: Crasun Jans (Janak Panthi)
+%--------------------------------------------------------------------------
+function [cc_slist] = ComposeCcSlist(slist, thetalist, M, aff_screw, affType)
 
         % Compute robot Jacobian
         jac = JacobianSpace(slist(:, 1:6), thetalist(1:6));
@@ -12,6 +15,9 @@ function [cc_slist] = compose_cc_slist(slist, thetalist, M, aff_screw)
         sph_z = [[0, 0, 1] cross(fk(1:3, 4)', [0, 0, 1])]';
 
         % Fill out the cc_list
-        cc_slist = [jac sph_x sph_y sph_z -aff_screw];
+        if strcmpi(affType, 'pure_rot')
+            aff_screw = -aff_screw;
+        end
+        cc_slist = [jac sph_x sph_y sph_z aff_screw];
 
 end

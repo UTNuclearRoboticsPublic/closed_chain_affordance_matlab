@@ -2,12 +2,12 @@
 % Author: Crasun Jans (Janak Panthi)
 %--------------------------------------------------------------------------
 
-function [qp, qsb, errTwist] = ClosureErrorOptimizer(mErr, slist, qp, qsb, Np, Ns, Tsd, taskOffset)
+function [qp, qsb, errTwist] = ClosureErrorOptimizer(slist, qp, qsb, Np, Ns, Tsd, taskOffset)
 
     thetalist =[qp; qsb];
 
     % Calculate the closure error
-    Tse = FKinSpace(mErr,slist,thetalist); %FK
+    Tse = FKinSpace(Tsd,slist,thetalist); %FK
     errTwist = Adjoint(Tse)*se3ToVec(MatrixLog6(TransInv(Tse)*Tsd));
 
     % Adjust qp and qs based on this error
@@ -20,7 +20,7 @@ function [qp, qsb, errTwist] = ClosureErrorOptimizer(mErr, slist, qp, qsb, Np, N
     thetalist =[qp; qsb];
 
     % Compute final error
-    Tse = FKinSpace(mErr,slist,thetalist); %FK
+    Tse = FKinSpace(Tsd,slist,thetalist); %FK
     errTwist = Adjoint(Tse)*se3ToVec(MatrixLog6(TransInv(Tse)*Tsd));
 
 end
