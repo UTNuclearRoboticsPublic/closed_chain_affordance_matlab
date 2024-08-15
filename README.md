@@ -1,5 +1,5 @@
 # Closed-Chain Affordance MATLAB
-This repository contains MATLAB scripts to simulate constrained manipulation joint trajectory planning utilizing the Closed-Chain Affordance Framework.
+This repository contains MATLAB scripts to simulate constrained manipulation joint trajectory planning utilizing the Closed-Chain Affordance framework.
 ## Dependencies
 Robotics System Toolbox
 ## Instructions
