@@ -2,7 +2,7 @@
 % Author: Crasun Jans (Janak Panthi)
 %--------------------------------------------------------------------------
 
-function [success, thetalist, errPlotMatrix, ikIter] = CallCcIkSolver(slist, qp_guess, qsb_guess, qsd, taskOffset, taskErrThreshold, maxItr, dt, closureErrThreshold, Tsd)
+function [success, thetalist, errPlotMatrix, ikIter] = CallCcIkSolver(slist, qp_guess, qsb_guess, qsd, taskOffset, accuracy, maxItr, dt, eps_rw, eps_rv, Tsd)
 
     % Set starting guess for the primary joint angles and compute forward
     % kinematics
@@ -14,7 +14,9 @@ function [success, thetalist, errPlotMatrix, ikIter] = CallCcIkSolver(slist, qp_
     errTwist = zeros(6,1);
     
     % Check Newton-Raphson error
-    err = norm(qsd-qsb)>taskErrThreshold|| norm(errTwist)>closureErrThreshold;
+    qs_tol = accuracy .* abs(qsd); % tolerance
+    qs_err = abs(qsd - qsb);
+    err = any(qs_err> qs_tol) || norm(errTwist(1:3)) > eps_rw || norm(errTwist(end-2:end)) > eps_rv;
     
     % Implement Algorithm
     ikIter = 1; % IK loop iterator
@@ -57,7 +59,8 @@ function [success, thetalist, errPlotMatrix, ikIter] = CallCcIkSolver(slist, qp_
         errPlotMatrix(ikIter,3) = norm(errTwist);
     
         % Check error as loop condition
-        err = norm(qsd-qsb)>taskErrThreshold|| norm(errTwist)>closureErrThreshold;
+        qs_err = abs(qsd - qsb);
+        err = any(qs_err> qs_tol) || norm(errTwist(1:3)) > eps_rw || norm(errTwist(end-2:end)) > eps_rv;
     
         % Increment loop iterator
         ikIter = ikIter+1;
