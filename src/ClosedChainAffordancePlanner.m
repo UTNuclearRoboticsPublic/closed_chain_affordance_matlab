@@ -21,15 +21,15 @@ clc
 
 % Robot and Affordance Type
 robotType = 'UR5';
-affType = 'screw'; % values: 'pure_rot', 'pure_trans', or 'screw'.
+affType = 'pure_rot'; % values: 'pure_rot', 'pure_trans', or 'screw'.
 
 % Algorithm control parameters
 affStep = 0.1;
 accuracy = 1*(1/100); % accuracy for error threshold
-taskErrThreshold = accuracy*affStep;
-closureErrThreshold = 1e-4;
+closureErrThresholdAng = 1e-4;
+closureErrThresholdLin = 1e-5;
 maxItr = 50; % for IK solver
-stepperMaxItr = 50; % for total steps , enter 0 to plot start config only
+stepperMaxItr = 1; % for total steps , enter 0 to plot start config only
 dt = 1e-2; % time step to compute joint velocities
 delta_theta = -0.1;
 pathComputerFlag = true;
@@ -49,7 +49,7 @@ if strcmpi(affType,'pure_rot')
     aff_offset = [0 -0.1 0]'; 
     q_aff = M(1:3,4) + aff_offset; % Defining wrt to the EE position for convenience but can set as however needed.
 
-    aff_screw = [w_aff; cross(q_aff,w_aff)]
+    aff_screw = [w_aff; cross(q_aff,w_aff)];
 elseif strcmpi(affType,'pure_trans')
     % Set the components to define the affordance frame
     aff_offset = [0 -0.1 0]'; 
@@ -114,7 +114,7 @@ qsd = thetalist0(end-taskOffset+1:end);
 qsd(taskOffset) = qsd(taskOffset)+stepperItr*affStep;
 
 % Call IK solver
-[success, thetalist, errPlotMatrix, ikIter] = CallCcIkSolver(slist, qp_guess, qsb_guess, qsd, taskOffset, taskErrThreshold, maxItr, dt, closureErrThreshold, Tsd);
+[success, thetalist, errPlotMatrix, ikIter] = CallCcIkSolver(slist, qp_guess, qsb_guess, qsd, taskOffset, accuracy, maxItr, dt, closureErrThresholdAng, closureErrThresholdLin, Tsd);
 
 
 if success
