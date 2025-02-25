@@ -13,22 +13,23 @@
 addpath(fullfile(pwd, 'ModernRobotics'));
 
 %% Clear variables and figures
-% close all
+close all
 clear all
 clf
 clc
 
 % Robot and Affordance Type
 robotType = 'UR5';
-affType = 'screw'; % values: 'pure_rot', 'pure_trans', or 'screw'.
+affType = 'Trans.'; % values: 'Rot.', 'Trans.', or 'Screw'.
+affUnits = 'rad'; % default. Set to m for trans below.
 
 % Algorithm control parameters
-affStep = 0.1;
+affStep = 0.05;
 accuracy = 1*(1/100); % accuracy for error threshold
 taskErrThreshold = accuracy*affStep;
 closureErrThreshold = 1e-4;
 maxItr = 50; % for IK solver
-stepperMaxItr = 50; % for total steps , enter 0 to plot start config only
+stepperMaxItr = 1; % for total steps , enter 0 to plot start config only
 dt = 1e-2; % time step to compute joint velocities
 delta_theta = -0.1;
 pathComputerFlag = true;
@@ -48,9 +49,10 @@ else
 end
 
 % Specify screw axis for pure translation
-if strcmpi(affType,'pure_trans')
+if strcmpi(affType,'Trans.')
     slist(:,end) = [0 0 0 1 0 0]';
-elseif strcmpi(affType, 'screw')
+    affUnits = 'm';
+elseif strcmpi(affType, 'Screw')
     % compose helical screw
     helical_screw = -slist(:,end);
     helical_screw(4:6) = helical_screw(4:6) + pitch*helical_screw(1:3);
@@ -60,7 +62,7 @@ screwPathMatrix = zeros(3,3,3);
 % If plotting screw path with start config, uncomment the following
 % Compute the screw path to plot as well
 % screwPathStart = FKinSpace(mlist(:,:,end-2), slist(:,1:end-2), thetalist0(1:end-2));% Starting guess for all relevant frames/tasks
-% if strcmpi(affType,'pure_trans')
+% if strcmpi(affType,'Trans.')
 %     iterations = 5;
 %     start_offset = [0.1; 0; 0];
 %     screwPathStart(1:3, 4) = screwPathStart(1:3, 4) + start_offset; % offset the path such that the beginning of the path coincides with the start config of the robot
@@ -177,24 +179,25 @@ set(gca, 'YScale', 'log');
 set(gca, 'FontSize', grid_fontsize,  'FontWeight', 'bold');
 grid on
 set(gca, 'GridLineWidth', grid_lw);
-% title("Affordance Step Goal Error vs. Iteration for " + num2str(stepperItr) + "st Step", 'FontSize', title_fontsize);
+title("Error vs. Iteration for " + num2str(affStep) + num2str(affUnits)+" Step " + num2str(affType) + " Motion", 'FontSize', title_fontsize);
 xlabel("iterations", 'FontSize', label_fontsize,  'FontWeight', 'bold');
-% xlim([1 9]);    % Pure rotation first step of 0.5rad
-% xlim([1 8]);    % Pure rotation first step of 0.1rad
-% xlim([1 30]);    % Pure translation first step of 0.05m
-% xlim([1 30]);    % Pure translation first step of 0.01m
-% xlim([1 10]);    % screw first step of 0.5rad
-xlim([1 10]);    % screw first step of 0.1rad
+% xlim([1 9]);    % Pure rotation 
+xlim([1 30]);    % Pure translation 
+% xlim([1 10]);    % screw
 xlimits = xlim;
-set(gca,'Xtick',0:1:xlimits(2))
+if strcmpi(affType,'Trans.')
+    set(gca,'Xtick',0:5:xlimits(2))
+else
+    set(gca,'Xtick',0:1:xlimits(2))
+end
 
 % ee_error_plot_xlim = xlim(gca)
-if strcmpi(affType,'pure_trans')
+if strcmpi(affType,'Trans.')
     yyaxis left
-    ylabel("aff error, m", 'FontSize', label_fontsize,  'FontWeight', 'bold');
+    ylabel("aff error," + num2str(affUnits), 'FontSize', label_fontsize,  'FontWeight', 'bold');
     % Pure translation first step of 0.05m
     ylim([10e-5 10e-2]);
-    yticks([10^-3,10^-1]);
+    yticks([10^-5, 10^-3, 10^-1]);
     % Pure translation first step of 0.01m
     % ylim([10e-6-10e-7 10e-3]);
     % yticks([10^-5, 10^-3]);
@@ -207,43 +210,26 @@ if strcmpi(affType,'pure_trans')
     % Pure translation first step of 0.01m
     % ylim([10e-6-10e-7 10e-3]);
     % yticks([10^-4, 10^-2]);
-elseif strcmpi(affType,'pure_rot')
+elseif strcmpi(affType,'Rot.')
     yyaxis left
-    ylabel("aff error, rad", 'FontSize', label_fontsize,  'FontWeight', 'bold');
-    % Pure rotation first step of 0.5rad
-    ylim([10e-4 10e-1]);
-    yticks([10^-3,10^-1]);
-    % Pure rotation first step of 0.1rad
-    % ylim([10e-5 10e-2]);
-    % yticks([10^-3,10^-1]);
+    ylabel("aff error," + num2str(affUnits), 'FontSize', label_fontsize,  'FontWeight', 'bold');
+    ylim([10e-5 10e-1]);
+    yticks([10^-5, 10^-3, 10^-1]);
     yyaxis right
     set(gca, 'YColor', 'k');
     set(gca, 'YScale', 'log');
-    % Pure rotation first step of 0.5rad
-    ylim([10e-4 10e-1]);
-    yticks([10^-2,10^0]);
-    % Pure rotation first step of 0.1rad
-    % ylim([10e-5 10e-2]);
-    % yticks([10^-4,10^-2]);
-
+    ylim([10e-5 10e-1]);
+    yticks([10^-4, 10^-2, 10^0]);
 else % screw
     yyaxis left
-    ylabel("aff error, rad", 'FontSize', label_fontsize,  'FontWeight', 'bold');
-    % Pure rotation first step of 0.5rad
-    % ylim([10e-4 10e-1]);
-    % yticks([10^-3,10^-1]);
-    % Pure rotation first step of 0.1rad
-    ylim([10e-5 10e-2]);
+    ylabel("aff error," + num2str(affUnits), 'FontSize', label_fontsize,  'FontWeight', 'bold');
+    ylim([10e-5 10e-1]);
     yticks([10^-3,10^-1]);
     yyaxis right
     set(gca, 'YColor', 'k');
     set(gca, 'YScale', 'log');
-    % Pure rotation first step of 0.5rad
-    % ylim([10e-4 10e-1]);
-    % yticks([10^-2,10^0]);
-    % Pure rotation first step of 0.1rad
-    ylim([10e-5 10e-2]);
-    yticks([10^-4,10^-2]);
+    ylim([10e-5 10e-1]);
+    yticks([10^-4, 10^-2, 10^0]);
 end
 
 subplot(2,1,2)
@@ -255,54 +241,25 @@ set(gca, 'GridLineWidth', grid_lw);
 % title("Closure Error vs. Iteration for " + num2str(stepperItr) + "st Step", 'FontSize', title_fontsize);
 xlabel("iterations", 'FontSize', label_fontsize,  'FontWeight', 'bold');
 ylabel("closure error", 'FontSize', label_fontsize,  'FontWeight', 'bold');
-% xlim([1 9]);    % Pure rotation first step of 0.5rad
-% xlim([1 8]);    % Pure rotation first step of 0.1rad
-% xlim([1 30]);    % Pure translation first step of 0.05m
-% xlim([1 30]);    % Pure translation first step of 0.01m
-% xlim([1 10]);    % screw first step of 0.5rad
-xlim([1 10]);    % screw first step of 0.1rad
+% xlim([1 9]);    % Pure rotation
+xlim([1 30]);    % Pure translation
+% xlim([1 10]);    % screw
 xlimits = xlim;
-set(gca,'Xtick',0:1:xlimits(2))
+
+if strcmpi(affType,'Trans.')
+    set(gca,'Xtick',0:5:xlimits(2))
+else
+    set(gca,'Xtick',0:1:xlimits(2))
+end
 
 yyaxis left
-% Pure translation first step of 0.05m
-% ylim([10e-7 10e-2]);
-% yticks([10^-5, 10^-3, 10^-1]);
-% Pure translation first step of 0.01m
-% ylim([10e-9 10e-4]);
-% yticks([10^-7, 10^-5, 10^-3]);
-% Pure rotation first step of 0.5rad
-% ylim([10e-8 10e-2]);
-% yticks([10^-7, 10^-5, 10^-3, 10^-1]);
-% Pure rotation first step of 0.1rad
-% ylim([10e-8 10e-3]);
-% yticks([10^-7, 10^-5, 10^-3]);
-% Screw first step of 0.5rad
-% ylim([10e-8 10e-2]);
-% yticks([10^-7, 10^-5, 10^-3, 10^-1]);
-% Screw first step of 0.1rad
-ylim([10e-8 10e-3]);
-yticks([10^-7, 10^-5, 10^-3]);
+% All
+ylim([10e-8 10e-2]);
+yticks([10^-7, 10^-5, 10^-3, 10^-1]);
 yyaxis right
 set(gca, 'YColor', 'k');
 set(gca, 'YScale', 'log');
-% Pure translation first step of 0.05m
-% ylim([10e-7 10e-2]);
-% yticks([10^-6, 10^-4, 10^-2]);
-% Pure translation first step of 0.01m
-% ylim([10e-9 10e-4]);
-% yticks([10^-8, 10^-6, 10^-4]);
-% Pure rotation first step of 0.5rad
-% ylim([10e-8 10e-2]);
-% yticks([10^-6, 10^-4, 10^-2]);
-% Pure rotation first step of 0.1rad
-% ylim([10e-8 10e-3]);
-% yticks([10^-6, 10^-4, 10^-2]);
-% Screw first step of 0.5rad
-% ylim([10e-8 10e-2]);
-% yticks([10^-6, 10^-4, 10^-2]);
-% Screw first step of 0.1rad
-ylim([10e-8 10e-3]);
+ylim([10e-8 10e-2]);
 yticks([10^-6, 10^-4, 10^-2]);
 
 if success
@@ -312,7 +269,7 @@ if success
     if pathComputerFlag
     % Compute the screw path to plot as well
     screwPathStart = FKinSpace(mlist(:,:,end-2), slist(:,1:end-2), thetalist(1:end-2));% Starting guess for all relevant frames/tasks
-    if strcmpi(affType,'pure_trans')
+    if strcmpi(affType,'Trans.')
         iterations = 5;
         start_offset = [0.1; 0; 0];
         screwPathStart(1:3, 4) = screwPathStart(1:3, 4) + start_offset; % offset the path such that the beginning of the path coincides with the start config of the robot
